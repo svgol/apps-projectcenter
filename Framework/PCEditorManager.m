@@ -210,6 +210,7 @@ NSString *PCEditorDidResignActiveNotification =
           if ([[NSWorkspace sharedWorkspace] openFile: filePath])
             return nil;
         }
+      return nil;
     }
 
 //  NSLog(@"EditorManager 1: %@", _editorsDict);

@@ -883,7 +883,7 @@
 	  {
 	    // many chances the editor should be updated
 	    PCProject *p = [_editorManager project];
-	    
+
 	    text = [[p infoDict] description];
 	    text = [text stringByReplacingOccurrencesOfString: @";" withString:@";\n   "];
 	    text = [text stringByReplacingOccurrencesOfString: @"{" withString:@"{\n    "];

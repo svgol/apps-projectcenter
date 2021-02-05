@@ -76,7 +76,15 @@
 - (BOOL)revertFileToSaved;
 - (BOOL)closeFile:(id)sender save:(BOOL)save;
 - (BOOL)close:(id)sender;
-   
+/**
+ * Allows to update the editor on the fly without rereading the file.
+ * Useful for editors that present content of auto-generated files.
+ * These files are populated from project's metadata. Any change in
+ * e.g. project's attributes should be visible to the user as a
+ * corresponding change in the content of such files.
+ */
+- (void)update:(id)aNotif;
+
 // ===========================================================================
 // ==== Parser and scrolling
 // ===========================================================================

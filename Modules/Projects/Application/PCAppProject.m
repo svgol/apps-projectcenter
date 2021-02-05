@@ -390,6 +390,42 @@
 
 @implementation PCAppProject (GeneratedFiles)
 
+- (void)_prepareInfoDict
+{
+  [self writeInfoEntry:@"ApplicationDescription" forKey:PCDescription];
+  [self writeInfoEntry:@"ApplicationIcon" forKey:PCAppIcon];
+  [self writeInfoEntry:@"ApplicationName" forKey:PCProjectName];
+  [self writeInfoEntry:@"ApplicationRelease" forKey:PCRelease];
+  [self writeInfoEntry:@"CFBundleIdentifier" forKey:PCBundleIdentifier];
+  [self writeInfoEntry:@"Authors" forKey:PCAuthors];
+  [self writeInfoEntry:@"Copyright" forKey:PCCopyright];
+  [self writeInfoEntry:@"CopyrightDescription" forKey:PCCopyrightDescription];
+  [self writeInfoEntry:@"FullVersionID" forKey:PCRelease];
+  [self writeInfoEntry:@"NSExecutable" forKey:PCProjectName];
+  [self writeInfoEntry:@"NSIcon" forKey:PCAppIcon];
+  if ([[projectDict objectForKey:PCAppType] isEqualToString:@"GORM"])
+    {
+      [self writeInfoEntry:@"NSMainNibFile" forKey:PCMainInterfaceFile];
+      [infoDict removeObjectForKey:@"GSMainMarkupFile"];
+    }
+  else
+    {
+      [self writeInfoEntry:@"GSMainMarkupFile" forKey:PCMainInterfaceFile];
+      [infoDict removeObjectForKey:@"NSMainNibFile"];
+    }
+  [self writeInfoEntry:@"NSPrincipalClass" forKey:PCPrincipalClass];
+  [infoDict setObject:@"Application" forKey:@"NSRole"];
+  [self writeInfoEntry:@"NSTypes" forKey:PCDocumentTypes];
+  [self writeInfoEntry:@"URL" forKey:PCURL];
+}
+
+- (NSDictionary *)infoDict
+{
+  [self _prepareInfoDict];
+
+  return [NSDictionary dictionaryWithDictionary: infoDict];
+}
+
 - (void)writeInfoEntry:(NSString *)name forKey:(NSString *)key
 {
   id entry = [projectDict objectForKey:key];
@@ -418,31 +454,7 @@
 {
   NSString *infoFile = nil;
 
-  [self writeInfoEntry:@"ApplicationDescription" forKey:PCDescription];
-  [self writeInfoEntry:@"ApplicationIcon" forKey:PCAppIcon];
-  [self writeInfoEntry:@"ApplicationName" forKey:PCProjectName];
-  [self writeInfoEntry:@"ApplicationRelease" forKey:PCRelease];
-  [self writeInfoEntry:@"CFBundleIdentifier" forKey:PCBundleIdentifier];
-  [self writeInfoEntry:@"Authors" forKey:PCAuthors];
-  [self writeInfoEntry:@"Copyright" forKey:PCCopyright];
-  [self writeInfoEntry:@"CopyrightDescription" forKey:PCCopyrightDescription];
-  [self writeInfoEntry:@"FullVersionID" forKey:PCRelease];
-  [self writeInfoEntry:@"NSExecutable" forKey:PCProjectName];
-  [self writeInfoEntry:@"NSIcon" forKey:PCAppIcon];
-  if ([[projectDict objectForKey:PCAppType] isEqualToString:@"GORM"])
-    {
-      [self writeInfoEntry:@"NSMainNibFile" forKey:PCMainInterfaceFile];
-      [infoDict removeObjectForKey:@"GSMainMarkupFile"];
-    }
-  else
-    {
-      [self writeInfoEntry:@"GSMainMarkupFile" forKey:PCMainInterfaceFile];
-      [infoDict removeObjectForKey:@"NSMainNibFile"];
-    }
-  [self writeInfoEntry:@"NSPrincipalClass" forKey:PCPrincipalClass];
-  [infoDict setObject:@"Application" forKey:@"NSRole"];
-  [self writeInfoEntry:@"NSTypes" forKey:PCDocumentTypes];
-  [self writeInfoEntry:@"URL" forKey:PCURL];
+  [self _prepareInfoDict];
 
   infoFile = [NSString stringWithFormat:@"%@Info.plist",projectName];
   infoFile = [projectPath stringByAppendingPathComponent:infoFile];

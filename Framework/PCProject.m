@@ -312,6 +312,12 @@ NSString
   return (NSDictionary *)projectDict;
 }
 
+// Info.plist
+- (NSDictionary *)infoDict
+{
+  return nil;
+}
+
 // --- Name and path
 - (NSString *)projectName
 {
@@ -1358,6 +1364,7 @@ NSString
   id<CodeEditor>      _editor;
   NSString            *_editorPath = nil;
   NSMutableString     *_editorCategory = nil;
+  NSMutableDictionary *notifObject = [NSMutableDictionary dictionary];
   
   selectedCategory = [projectBrowser nameOfSelectedCategory];
   selectedCategoryKey = [self keyForCategory:selectedCategory];
@@ -1475,6 +1482,14 @@ NSString
       [projectBrowser reloadLastColumnAndSelectFile:toFile];
 
     }
+
+  // Send in notification project itself
+  [notifObject setObject:self forKey:@"Project"];
+
+
+  [[NSNotificationCenter defaultCenter] 
+	postNotificationName:PCProjectDictDidChangeNotification
+                      object:notifObject];
 
   return YES;
 }

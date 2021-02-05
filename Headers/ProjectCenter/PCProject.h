@@ -100,6 +100,9 @@ extern NSString *PCProjectBreakpointNotification;
 - (void)updateProjectDict;
 - (NSDictionary *)projectDict;
 
+// Info.plist
+- (NSDictionary *)infoDict;
+
 - (NSString *)projectName;
 - (void)setProjectName:(NSString *)aName;
 - (NSString *)projectPath;

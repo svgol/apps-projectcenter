@@ -304,7 +304,6 @@
   [_storage setAttributedString:attributedString];
 
   RELEASE(attributedString);
-  RELEASE(attributes);
 }
 // --- Protocol
 - (void)setParser:(id)parser

@@ -879,7 +879,7 @@
   NSString *text = nil;
   PCProject *p;
   NSData *pList;
-  NSString *errorDescription;
+  NSString *errorDescription = nil;
 
   if (!_isEditable &&
       [[aNotif name] isEqualToString: PCProjectDictDidChangeNotification])
@@ -894,7 +894,7 @@
 						     errorDescription: &errorDescription];
 	    if (!errorDescription)
 	      {
-		NSLog(@"editor updated");
+
 		text = [[NSString alloc] initWithData: pList encoding: NSASCIIStringEncoding];
 		[self _prepareTextStorage: text];
 

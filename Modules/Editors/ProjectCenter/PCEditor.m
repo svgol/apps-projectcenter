@@ -914,11 +914,10 @@
 
 		text = [[NSString alloc] initWithData: pList encoding: NSASCIIStringEncoding];
 		[self _prepareTextStorage: text];
+		[text release];
 
 		if (_intEditorView) [_intEditorView setNeedsDisplay:YES];
 		if (_extEditorView) [_extEditorView setNeedsDisplay:YES];
-
-		RELEASE(text);
 	      }
 
 	  }

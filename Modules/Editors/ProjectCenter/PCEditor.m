@@ -33,6 +33,8 @@
 #import <ProjectCenter/PCProjectManager.h>
 #import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
 
+#import <Foundation/NSPropertyList.h>
+
 @implementation PCEditor (UInterface)
 
 - (void)_createWindow
@@ -875,6 +877,9 @@
 - (void)update:(id)aNotif
 {
   NSString *text = nil;
+  PCProject *p;
+  NSData *pList;
+  NSString *errorDescription;
 
   if (!_isEditable &&
       [[aNotif name] isEqualToString: PCProjectDictDidChangeNotification])
@@ -882,16 +887,23 @@
       if ([[[_path lastPathComponent] pathExtension] isEqualToString: @"plist"])
 	  {
 	    // many chances the editor should be updated
-	    PCProject *p = [_editorManager project];
+	    p = [_editorManager project];
+	    
+	    pList = [NSPropertyListSerialization dataFromPropertyList: [p infoDict]
+							       format: NSPropertyListGNUstepFormat
+						     errorDescription: &errorDescription];
+	    if (!errorDescription)
+	      {
+		NSLog(@"editor updated");
+		text = [[NSString alloc] initWithData: pList encoding: NSASCIIStringEncoding];
+		[self _prepareTextStorage: text];
 
-	    text = [[p infoDict] description];
-	    text = [text stringByReplacingOccurrencesOfString: @";" withString:@";\n   "];
-	    text = [text stringByReplacingOccurrencesOfString: @"{" withString:@"{\n    "];
-	    text = [text stringByReplacingOccurrencesOfString: @"    }" withString:@"}"];
-	    [self _prepareTextStorage: text];
+		if (_intEditorView) [_intEditorView setNeedsDisplay:YES];
+		if (_extEditorView) [_extEditorView setNeedsDisplay:YES];
 
-	    if (_intEditorView) [_intEditorView setNeedsDisplay:YES];
-	    if (_extEditorView) [_extEditorView setNeedsDisplay:YES];
+		RELEASE(text);
+	      }
+
 	  }
     }
 }

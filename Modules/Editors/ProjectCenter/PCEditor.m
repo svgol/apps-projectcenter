@@ -1,7 +1,7 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2002-2015 Free Software Foundation
+   Copyright (C) 2002-2021 Free Software Foundation
 
    Authors: Philippe C.D. Robert
 	    Serg Stoyan
@@ -28,8 +28,12 @@
 #import "PCEditorView.h"
 
 #import <Protocols/Preferences.h>
-#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
+
+#import <ProjectCenter/PCProject.h>
 #import <ProjectCenter/PCProjectManager.h>
+#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
+
+#import <Foundation/NSPropertyList.h>
 
 @implementation PCEditor (UInterface)
 
@@ -112,9 +116,13 @@
 
 - (PCEditorView *)_createEditorViewWithFrame:(NSRect)fr
 {
-  PCEditorView    *ev = nil;
-  NSTextContainer *tc = nil;
-  NSLayoutManager *lm = nil;
+  PCEditorView       *ev = nil;
+  NSTextContainer    *tc = nil;
+  NSLayoutManager    *lm = nil;
+  NSColor            *bSelCol = nil;
+  NSColor            *tSelCol = nil;
+  id <PCPreferences>  prefs;
+  NSDictionary       *selAttributes;
 
   /*
    * setting up the objects needed to manage the view but using the
@@ -151,6 +159,19 @@
   [[ev textContainer] setContainerSize:NSMakeSize(fr.size.width, 1e7)];
 
   [ev setEditable:_isEditable];
+
+  prefs = [[_editorManager projectManager] prefController];
+  bSelCol = [prefs colorForKey:EditorSelectionColor];
+  tSelCol = [NSColor colorWithCalibratedRed: 1.0 - [bSelCol redComponent]
+				      green: 1.0 - [bSelCol greenComponent]
+				       blue: 1.0 - [bSelCol blueComponent]
+				      alpha: [bSelCol alphaComponent]];
+  selAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
+				  bSelCol, NSBackgroundColorAttributeName,
+				tSelCol, NSForegroundColorAttributeName,
+				nil];
+  [ev setSelectedTextAttributes:selAttributes];
+  [ev setSelectedTextAttributes:selAttributes];
 
   // Activate undo
   [ev setAllowsUndo: YES];
@@ -249,6 +270,41 @@
   [super dealloc];
 }
 
+/* prepares the internal TextStorage with the supplied text */
+- (void)_prepareTextStorage:(NSString *)text
+{
+  NSAttributedString  *attributedString = [NSAttributedString alloc];
+  NSMutableDictionary *attributes = [NSMutableDictionary new];
+  NSFont              *font;
+  id <PCPreferences>  prefs = [[_editorManager projectManager] prefController];
+
+  // Prepare
+  font = [NSFont userFixedPitchFontOfSize:0.0];
+  if (_isEditable)
+    {
+      NSColor *col;
+
+      col = [prefs colorForKey:EditorBackgroundColor defaultValue:backgroundColor];
+      textBackground = col;
+    }
+  else
+    {
+      textBackground = readOnlyColor;
+    }
+
+  [attributes setObject:font forKey:NSFontAttributeName];
+  [attributes setObject:textBackground forKey:NSBackgroundColorAttributeName];
+  [attributes setObject:[prefs colorForKey:EditorForegroundColor defaultValue:textColor] forKey:NSForegroundColorAttributeName];
+  attributedString = [attributedString initWithString:text attributes:attributes];
+  [attributes release];
+
+  if (!_storage) {
+    _storage = [[NSTextStorage alloc] init];
+  }
+  [_storage setAttributedString:attributedString];
+
+  RELEASE(attributedString);
+}
 // --- Protocol
 - (void)setParser:(id)parser
 {
@@ -264,12 +320,9 @@
 	    editable:(BOOL)editable
 {
   NSString            *text;
-  NSAttributedString  *attributedString = [NSAttributedString alloc];
-  NSMutableDictionary *attributes = [NSMutableDictionary new];
-  NSFont              *font;
-  id <PCPreferences>  prefs;
   NSFileManager       *fm = [NSFileManager defaultManager];
-
+  NSDictionary *attr;
+  
   // Inform about future file opening
   [[NSNotificationCenter defaultCenter]
     postNotificationName:PCEditorWillOpenNotification
@@ -278,35 +331,13 @@
   _editorManager = editorManager;
   _path = [filePath copy];
   _isEditable = editable;
-  prefs = [[_editorManager projectManager] prefController];
-  NSDictionary *attr = [fm fileAttributesAtPath: _path traverseLink: NO];
+
+  attr = [fm fileAttributesAtPath: _path traverseLink: NO];
   modTime = [[attr fileModificationDate] retain];
 
-  // Prepare
-  font = [NSFont userFixedPitchFontOfSize:0.0];
-  if (editable)
-    {
-      NSColor *col;
-
-      col = [prefs colorForKey:EditorBackgroundColor defaultValue:backgroundColor];
-      textBackground = col;
-    }
-  else
-    {
-      textBackground = readOnlyColor;
-    }
-
-  [attributes setObject:font forKey:NSFontAttributeName];
-  [attributes setObject:textBackground forKey:NSBackgroundColorAttributeName];
-  [attributes setObject:[prefs colorForKey:EditorForegroundColor defaultValue:textColor] forKey:NSForegroundColorAttributeName];
-
   text  = [NSString stringWithContentsOfFile:_path];
-  attributedString = [attributedString initWithString:text attributes:attributes];
 
-  _storage = [[NSTextStorage alloc] init];
-  [_storage setAttributedString:attributedString];
-  RELEASE(attributedString);
-  RELEASE(attributes);
+  [self _prepareTextStorage: text];
 
 //  [self _createInternalView];
 /*  if (categoryPath) // category == nil if we're non project editor
@@ -851,6 +882,46 @@
     }
 
   return YES;
+}
+
+/**
+ * Allows update the editor on the fly without rereading the file.
+ * Useful for editors that present content of auto-generated files.
+ * These files are populated from project's metadata. Any change in
+ * e.g. project's attributes should be visible to the user as a
+ * corresponding change in the content of such files.
+ */
+- (void)update:(id)aNotif
+{
+  NSString *text = nil;
+  PCProject *p;
+  NSData *pList;
+  NSString *errorDescription = nil;
+
+  if (!_isEditable &&
+      [[aNotif name] isEqualToString: PCProjectDictDidChangeNotification])
+    {
+      if ([[[_path lastPathComponent] pathExtension] isEqualToString: @"plist"])
+	  {
+	    // many chances the editor should be updated
+	    p = [_editorManager project];
+	    
+	    pList = [NSPropertyListSerialization dataFromPropertyList: [p infoDict]
+							       format: NSPropertyListGNUstepFormat
+						     errorDescription: &errorDescription];
+	    if (!errorDescription)
+	      {
+
+		text = [[NSString alloc] initWithData: pList encoding: NSASCIIStringEncoding];
+		[self _prepareTextStorage: text];
+		[text release];
+
+		if (_intEditorView) [_intEditorView setNeedsDisplay:YES];
+		if (_extEditorView) [_extEditorView setNeedsDisplay:YES];
+	      }
+
+	  }
+    }
 }
 
 // ===========================================================================

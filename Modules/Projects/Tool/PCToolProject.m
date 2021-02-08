@@ -218,6 +218,26 @@
 
 @implementation PCToolProject (GeneratedFiles)
 
+- (void)_prepareInfoDict
+{
+  [self writeInfoEntry:@"ToolName" forKey:PCProjectName];
+  [self writeInfoEntry:@"ToolDescription" forKey:PCDescription];
+  [self writeInfoEntry:@"ToolIcon" forKey:PCToolIcon];
+  [self writeInfoEntry:@"ToolRelease" forKey:PCRelease];
+  [self writeInfoEntry:@"FullVersionID" forKey:PCRelease];
+  [self writeInfoEntry:@"Authors" forKey:PCAuthors];
+  [self writeInfoEntry:@"URL" forKey:PCURL];
+  [self writeInfoEntry:@"Copyright" forKey:PCCopyright];
+  [self writeInfoEntry:@"CopyrightDescription" forKey:PCCopyrightDescription];
+}
+
+- (NSDictionary *)infoDict
+{
+  [self _prepareInfoDict];
+
+  return [NSDictionary dictionaryWithDictionary: infoDict];
+}
+
 - (void)writeInfoEntry:(NSString *)name forKey:(NSString *)key
 {
   id entry = [projectDict objectForKey:key];
@@ -246,15 +266,7 @@
 {
   NSString *infoFile = nil;
 
-  [self writeInfoEntry:@"ToolName" forKey:PCProjectName];
-  [self writeInfoEntry:@"ToolDescription" forKey:PCDescription];
-  [self writeInfoEntry:@"ToolIcon" forKey:PCToolIcon];
-  [self writeInfoEntry:@"ToolRelease" forKey:PCRelease];
-  [self writeInfoEntry:@"FullVersionID" forKey:PCRelease];
-  [self writeInfoEntry:@"Authors" forKey:PCAuthors];
-  [self writeInfoEntry:@"URL" forKey:PCURL];
-  [self writeInfoEntry:@"Copyright" forKey:PCCopyright];
-  [self writeInfoEntry:@"CopyrightDescription" forKey:PCCopyrightDescription];
+  [self _prepareInfoDict];
 
   infoFile = [NSString stringWithFormat:@"%@Info.plist",projectName];
   infoFile = [projectPath stringByAppendingPathComponent:infoFile];

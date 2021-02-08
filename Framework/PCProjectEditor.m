@@ -252,6 +252,12 @@
       [editor fileStructureItemSelected:pathLastObject];
     }
 
+  [[NSNotificationCenter defaultCenter]
+	addObserver:editor
+	   selector:@selector(update:)
+	       name:PCProjectDictDidChangeNotification
+	     object:nil];
+
   return editor;
 }
 

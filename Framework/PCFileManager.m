@@ -380,6 +380,7 @@ static PCFileManager *_mgr = nil;
   id <PCPreferences> prefs = [projectManager prefController];
   NSString           *lastOpenDir;
   id                 panel;
+
   operation = op;
 
   switch (op)

@@ -279,6 +279,7 @@
   [attributes setObject:textBackground forKey:NSBackgroundColorAttributeName];
   [attributes setObject:[prefs colorForKey:EditorForegroundColor defaultValue:textColor] forKey:NSForegroundColorAttributeName];
   attributedString = [attributedString initWithString:text attributes:attributes];
+  [attributes release];
 
   if (!_storage) {
     _storage = [[NSTextStorage alloc] init];
@@ -286,7 +287,6 @@
   [_storage setAttributedString:attributedString];
 
   RELEASE(attributedString);
-  RELEASE(attributes);
 }
 // --- Protocol
 - (void)setParser:(id)parser

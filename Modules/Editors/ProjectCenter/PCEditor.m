@@ -1,7 +1,7 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2002-2021 Free Software Foundation
+   Copyright (C) 2002-2015 Free Software Foundation
 
    Authors: Philippe C.D. Robert
 	    Serg Stoyan
@@ -116,13 +116,9 @@
 
 - (PCEditorView *)_createEditorViewWithFrame:(NSRect)fr
 {
-  PCEditorView       *ev = nil;
-  NSTextContainer    *tc = nil;
-  NSLayoutManager    *lm = nil;
-  NSColor            *bSelCol = nil;
-  NSColor            *tSelCol = nil;
-  id <PCPreferences>  prefs;
-  NSDictionary       *selAttributes;
+  PCEditorView    *ev = nil;
+  NSTextContainer *tc = nil;
+  NSLayoutManager *lm = nil;
 
   /*
    * setting up the objects needed to manage the view but using the
@@ -159,19 +155,6 @@
   [[ev textContainer] setContainerSize:NSMakeSize(fr.size.width, 1e7)];
 
   [ev setEditable:_isEditable];
-
-  prefs = [[_editorManager projectManager] prefController];
-  bSelCol = [prefs colorForKey:EditorSelectionColor];
-  tSelCol = [NSColor colorWithCalibratedRed: 1.0 - [bSelCol redComponent]
-				      green: 1.0 - [bSelCol greenComponent]
-				       blue: 1.0 - [bSelCol blueComponent]
-				      alpha: [bSelCol alphaComponent]];
-  selAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-				  bSelCol, NSBackgroundColorAttributeName,
-				tSelCol, NSForegroundColorAttributeName,
-				nil];
-  [ev setSelectedTextAttributes:selAttributes];
-  [ev setSelectedTextAttributes:selAttributes];
 
   // Activate undo
   [ev setAllowsUndo: YES];
@@ -296,7 +279,6 @@
   [attributes setObject:textBackground forKey:NSBackgroundColorAttributeName];
   [attributes setObject:[prefs colorForKey:EditorForegroundColor defaultValue:textColor] forKey:NSForegroundColorAttributeName];
   attributedString = [attributedString initWithString:text attributes:attributes];
-  [attributes release];
 
   if (!_storage) {
     _storage = [[NSTextStorage alloc] init];

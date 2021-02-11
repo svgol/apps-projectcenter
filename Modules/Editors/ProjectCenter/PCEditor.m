@@ -156,6 +156,20 @@
 
   [ev setEditable:_isEditable];
 
+  prefs = [[_editorManager projectManager] prefController];
+  bSelCol = [prefs colorForKey:EditorSelectionColor defaultValue:[NSColor blackColor]];
+  bSelCol = [bSelCol colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+  tSelCol = [NSColor colorWithCalibratedRed: 1.0 - [bSelCol redComponent]
+				      green: 1.0 - [bSelCol greenComponent]
+				       blue: 1.0 - [bSelCol blueComponent]
+				      alpha: [bSelCol alphaComponent]];
+  selAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
+				  bSelCol, NSBackgroundColorAttributeName,
+				tSelCol, NSForegroundColorAttributeName,
+				nil];
+  [ev setSelectedTextAttributes:selAttributes];
+  [ev setSelectedTextAttributes:selAttributes];
+
   // Activate undo
   [ev setAllowsUndo: YES];
 

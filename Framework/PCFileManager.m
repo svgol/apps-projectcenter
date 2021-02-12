@@ -422,47 +422,10 @@ static PCFileManager *_mgr = nil;
       break;
     }
 
-  // open panels in the current active project TODO: hardcoded prefs name
-  if ([prefs boolForKey:@"KeepPanelsWithinActiveProject"])
-    {
-      PCProject *p = [projectManager activeProject];
-      if (p) {
-	NSString *pPath = [p projectPath];
-	if (lastOpenDir)
-	  {
-	    NSUInteger len = [pPath length];
-	    if ([lastOpenDir length] <= len)
-	      {
-		lastOpenDir = pPath;
-	      }
-	    else
-	      {
-		BOOL within = NO;
-		NSString *t = [lastOpenDir stringByDeletingLastPathComponent];
-		while ([t length] > len)
-		  {
-		    if ([t isEqualToString: pPath]) {
-		      within = YES;
-		      break;
-		    }
-		    t = [t stringByDeletingLastPathComponent];
-		  }
-		if (!within) {
-		  lastOpenDir = pPath;
-		}
-	      }
-	  }
-	else
-	  {
-	    lastOpenDir = pPath;
-	  }
-      }
-    }
-  else if(!lastOpenDir)
+  if (!lastOpenDir)
     {
       lastOpenDir = NSHomeDirectory();
     }
-
   [panel setDirectory:lastOpenDir];
   [panel setDelegate:self];
 

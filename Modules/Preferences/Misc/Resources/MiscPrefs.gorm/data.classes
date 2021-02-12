@@ -2,14 +2,13 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     FirstResponder = {
 	Actions = (
-	    "setKeepPanels:",
+	    "setUseTearOffWindows:",
 	    "setDebugger:",
 	    "setDisplayLog:",
 	    "setEditor:",
 	    "setFullPathInFilePanels:",
 	    "setPromptWhenQuit:",
-	    "setRememberWindows:",
-	    "setUseTearOffWindows:"
+	    "setRememberWindows:"
 	);
 	Super = NSObject;
     };
@@ -21,8 +20,7 @@
 	    "setPromptWhenQuit:",
 	    "setDisplayLog:",
 	    "setRememberWindows:",
-	    "setUseTearOffWindows:",
-	    "setKeepPanels:"
+	    "setUseTearOffWindows:"
 	);
 	Outlets = (
 	    debuggerButton,
@@ -34,8 +32,7 @@
 	    promptWhenQuit,
 	    displayLog,
 	    rememberWindows,
-	    useTearOffWindows,
-	    keepPanels
+	    useTearOffWindows
 	);
 	Super = NSObject;
     };

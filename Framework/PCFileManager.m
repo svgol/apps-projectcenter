@@ -1,11 +1,10 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2000-2021 Free Software Foundation
+   Copyright (C) 2000-2011 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
-	    Riccardo Mottola
 
    This file is part of GNUstep.
 
@@ -417,22 +416,52 @@ static PCFileManager *_mgr = nil;
 	}
       panel = addFilesPanel;
       lastOpenDir = [prefs stringForKey:@"FileAddLastDirectory"];
-      if (lastOpenDir == nil)
-	{
-	  PCProject *pr = [projectManager activeProject];
-	  NSString *prPathRoot = [pr projectPath];
-	  lastOpenDir = prPathRoot;
-	}
       break;
     default:
       return nil;
       break;
     }
 
-  if (!lastOpenDir)
+  // always open panels in the current active project
+  PCProject *p = [projectManager activeProject];
+  if (p)
+    {
+      NSString *pPath = [p projectPath];
+      if (lastOpenDir)
+	{
+	  NSUInteger len = [pPath length];
+	  if ([lastOpenDir length] <= len)
+	    {
+	      lastOpenDir = pPath;
+	    }
+	  else
+	    {
+	      BOOL within = NO;
+	      NSString *t = [lastOpenDir stringByDeletingLastPathComponent];
+	      while ([t length] > len)
+		{
+		  if ([t isEqualToString: pPath]) {
+		    within = YES;
+		    break;
+		  }
+		  t = [t stringByDeletingLastPathComponent];
+		}
+	      if (!within) {
+		lastOpenDir = pPath;
+	      }
+	    }
+	}
+      else
+	{
+	  lastOpenDir = pPath;
+	}
+    }
+
+  if(!lastOpenDir)
     {
       lastOpenDir = NSHomeDirectory();
     }
+
   [panel setDirectory:lastOpenDir];
   [panel setDelegate:self];
 
